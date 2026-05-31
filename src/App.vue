@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import PixelCanvas from "./components/PixelCanvas.vue";
-import ColorPicker from "./components/ColorPicker.vue";
+import { PixelCanvas } from "@/components/ui/pixelcanvas";
+import { ColorPicker } from "@/components/ui/colorpicker";
 </script>
 
 <template>
