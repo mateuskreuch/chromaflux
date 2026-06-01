@@ -5,14 +5,26 @@ import { setColor, useColor } from "@/composables/useColor";
 import { wrap } from "@/lib/utils";
 import { ColorPicker } from "./colorPicker";
 
-const DISPLAY_SIZE = 512;
-
 const { color } = useColor();
 
 const dragMode = ref<"hue" | "sv" | null>(null);
 const canvasRef = ref<HTMLCanvasElement>();
 
 let colorPicker: ColorPicker | null;
+let resizeObserver: ResizeObserver | null = null;
+
+function updateCanvasSize() {
+  if (!canvasRef.value) return;
+
+  const rect = canvasRef.value.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
+
+  canvasRef.value.width = rect.width * dpr;
+  canvasRef.value.height = rect.height * dpr;
+
+  colorPicker = ColorPicker.build(canvasRef.value);
+  colorPicker?.draw(color.value);
+}
 
 function onMouseDown(e: MouseEvent) {
   if (!colorPicker) return;
@@ -47,13 +59,20 @@ function onWindowMouseUp() {
 }
 
 onMounted(() => {
-  colorPicker = ColorPicker.build(canvasRef.value);
-  colorPicker?.draw(color.value);
+  if (canvasRef.value) {
+    updateCanvasSize();
+
+    resizeObserver = new ResizeObserver(updateCanvasSize);
+
+    resizeObserver.observe(canvasRef.value);
+  }
+
   window.addEventListener("mousemove", onWindowMouseMove);
   window.addEventListener("mouseup", onWindowMouseUp);
 });
 
 onUnmounted(() => {
+  resizeObserver?.disconnect();
   window.removeEventListener("mousemove", onWindowMouseMove);
   window.removeEventListener("mouseup", onWindowMouseUp);
 });
@@ -62,14 +81,14 @@ watch(color, () => colorPicker?.draw(color.value), { deep: true });
 </script>
 
 <template>
-  <div class="flex flex-col gap-4 justify-between items-center">
-    <canvas
-      ref="canvasRef"
-      :width="DISPLAY_SIZE"
-      :height="DISPLAY_SIZE"
-      class="cursor-crosshair select-none"
-      @mousedown="onMouseDown"
-    />
+  <div class="flex flex-col gap-4 justify-between items-center w-full">
+    <div class="aspect-square w-full">
+      <canvas
+        ref="canvasRef"
+        class="w-full h-full cursor-crosshair select-none"
+        @mousedown="onMouseDown"
+      />
+    </div>
     <div class="flex items-center gap-1.5">
       <span class="text-xs text-muted-foreground w-4 text-right">H</span>
       <Input

@@ -7,7 +7,6 @@ import { setColor, useColor } from "@/composables/useColor";
 import { PixelCanvas } from "./pixelCanvas";
 
 const GRID_SIZE = 32;
-const DISPLAY_SIZE = 512;
 
 const { color } = useColor();
 
@@ -92,22 +91,16 @@ onUnmounted(() => window.removeEventListener("mouseup", onWindowMouseUp));
 </script>
 
 <template>
-  <div class="flex flex-col gap-4 justify-between">
+  <div class="flex flex-col gap-4 justify-between w-full">
     <div
-      class="checkerboard cursor-crosshair select-none ring-1 ring-border"
-      :style="{ width: `${DISPLAY_SIZE}px`, height: `${DISPLAY_SIZE}px` }"
+      class="checkerboard cursor-crosshair select-none ring-1 ring-border aspect-square w-full"
       @contextmenu.prevent
     >
       <canvas
         ref="canvasRef"
         :width="GRID_SIZE"
         :height="GRID_SIZE"
-        :style="{
-          display: 'block',
-          width: `${DISPLAY_SIZE}px`,
-          height: `${DISPLAY_SIZE}px`,
-          imageRendering: 'pixelated',
-        }"
+        class="w-full h-full [image-rendering:pixelated]"
         @mousedown="onMouseDown"
         @mousemove="onMouseMove"
       />
