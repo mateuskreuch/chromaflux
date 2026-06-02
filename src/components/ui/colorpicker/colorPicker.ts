@@ -1,17 +1,17 @@
 import { hsv2rgb, rgbString, type HSV } from "@/lib/color";
-import { deg2rad, rad2deg, clamp } from "@/lib/utils";
+import { deg2rad, rad2deg, clamp, closestEven } from "@/lib/utils";
 import { Canvas, type Point } from "@/lib/canvas";
 
 export class ColorPicker extends Canvas {
-  protected readonly ringPickerSize: number;
-  protected readonly svMargin: number;
-  protected readonly svPickerRadius: number;
+  protected readonly cursorRadius: number;
   protected readonly center: number;
   protected readonly ringOuterRadius: number;
   protected readonly ringInnerRadius: number;
+  protected readonly ringCenterRadius: number;
   protected readonly svSize: number;
   protected readonly svStart: number;
   protected readonly svEnd: number;
+  protected readonly svOutline: number;
 
   static override build(canvas: HTMLCanvasElement | undefined): ColorPicker | null {
     return super.build(canvas) as ColorPicker | null;
@@ -20,24 +20,21 @@ export class ColorPicker extends Canvas {
   protected constructor(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D) {
     super(canvas, ctx);
 
-    const size = Math.min(canvas.width, canvas.height);
-    const ringWidth = 0.03 * size;
-    const ringMargin = 0.06 * size;
+    const size = closestEven(Math.min(canvas.width, canvas.height));
 
-    this.ringPickerSize = 0.01 * size;
-    this.svMargin = 0.03 * size;
-    this.svPickerRadius = 0.015 * size;
+    this.cursorRadius = Math.ceil(0.022 * size);
     this.center = size / 2;
-    this.ringOuterRadius = size / 2 - ringMargin;
-    this.ringInnerRadius = this.ringOuterRadius - ringWidth;
-    this.svSize = Math.ceil((this.ringInnerRadius - this.svMargin) * Math.SQRT2);
+    this.ringOuterRadius = size / 2;
+    this.ringInnerRadius = this.ringOuterRadius - 2*this.cursorRadius;
+    this.ringCenterRadius = Math.floor((this.ringOuterRadius + this.ringInnerRadius) / 2);
+    this.svSize = closestEven((this.ringInnerRadius - 1.8*this.cursorRadius) * Math.SQRT2);
     this.svStart = this.center - this.svSize / 2;
     this.svEnd = this.svStart + this.svSize;
+    this.svOutline = Math.ceil(0.005 * size);
   }
 
   draw(color: HSV): void {
-    const { ringPickerSize, center, ringOuterRadius, ringInnerRadius, svSize, svStart, svEnd } =
-      this;
+    const { center, ringOuterRadius, ringInnerRadius, svSize, svStart, svEnd } = this;
 
     this.clear();
 
@@ -53,10 +50,15 @@ export class ColorPicker extends Canvas {
     this.ctx.arc(center, center, ringInnerRadius, 0, 2 * Math.PI, true);
     this.ctx.fill("evenodd");
 
-    this.drawHueCursor(color.h, ringPickerSize);
-    this.drawHueCursor(color.h - 180, ringPickerSize / 2);
-    this.drawHueCursor(color.h - 120, ringPickerSize / 2);
-    this.drawHueCursor(color.h + 120, ringPickerSize / 2);
+    const hueAngle = deg2rad(color.h);
+
+    this.drawCursor({
+      x: center + this.ringCenterRadius * Math.cos(hueAngle),
+      y: center + this.ringCenterRadius * Math.sin(hueAngle),
+    });
+
+    this.ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+    this.ctx.fillRect(svStart - this.svOutline, svStart - this.svOutline, svSize + 2 * this.svOutline, svSize + 2 * this.svOutline);
 
     this.ctx.fillStyle = rgbString(hsv2rgb({ h: color.h, s: 100, v: 100 }));
     this.ctx.fillRect(svStart, svStart, svSize, svSize);
@@ -75,7 +77,7 @@ export class ColorPicker extends Canvas {
     this.ctx.fillStyle = valueGradient;
     this.ctx.fillRect(svStart, svStart, svSize, svSize);
 
-    this.drawSvCursor({
+    this.drawCursor({
       x: svStart + svSize * (color.s / 100),
       y: svStart + svSize * (1 - color.v / 100),
     });
@@ -109,48 +111,16 @@ export class ColorPicker extends Canvas {
     return x >= svStart && x <= svEnd && y >= svStart && y <= svEnd;
   }
 
-  private drawSvCursor({ x, y }: Point): void {
-    const { svPickerRadius } = this;
-
+  private drawCursor({ x, y }: Point, radius: number = this.cursorRadius): void {
     this.ctx.beginPath();
-    this.ctx.arc(x, y, svPickerRadius, 0, 2 * Math.PI);
+    this.ctx.arc(x, y, radius - 1, 0, 2 * Math.PI);
     this.ctx.strokeStyle = "#fff";
-    this.ctx.lineWidth = 1;
+    this.ctx.lineWidth = 2;
     this.ctx.stroke();
 
     this.ctx.beginPath();
-    this.ctx.arc(x, y, svPickerRadius - 1, 0, 2 * Math.PI);
-    this.ctx.strokeStyle = "rgba(0, 0, 0, 0.5)";
-    this.ctx.lineWidth = 1;
-    this.ctx.stroke();
-  }
-
-  private drawHueCursor(deg: number, size: number): void {
-    const { center, ringOuterRadius } = this;
-
-    const angle = deg2rad(deg);
-    const height = size * 2.5;
-    const halfBase = size * 1.5;
-    const tipR = ringOuterRadius + 3;
-    const baseR = tipR + height;
-
-    const tipX = center + tipR * Math.cos(angle);
-    const tipY = center + tipR * Math.sin(angle);
-    const baseCX = center + baseR * Math.cos(angle);
-    const baseCY = center + baseR * Math.sin(angle);
-    const base1X = baseCX + halfBase * Math.cos(angle + Math.PI / 2);
-    const base1Y = baseCY + halfBase * Math.sin(angle + Math.PI / 2);
-    const base2X = baseCX - halfBase * Math.cos(angle + Math.PI / 2);
-    const base2Y = baseCY - halfBase * Math.sin(angle + Math.PI / 2);
-
-    this.ctx.beginPath();
-    this.ctx.moveTo(tipX, tipY);
-    this.ctx.lineTo(base1X, base1Y);
-    this.ctx.lineTo(base2X, base2Y);
-    this.ctx.closePath();
-    this.ctx.fillStyle = "#fff";
-    this.ctx.fill();
-    this.ctx.strokeStyle = "rgba(0, 0, 0, 0.5)";
+    this.ctx.arc(x, y, radius - 2, 0, 2 * Math.PI);
+    this.ctx.strokeStyle = "#000";
     this.ctx.lineWidth = 1;
     this.ctx.stroke();
   }

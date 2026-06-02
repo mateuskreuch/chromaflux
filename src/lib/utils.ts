@@ -29,3 +29,7 @@ export function deg2rad(deg: number) {
 export function rad2deg(rad: number) {
   return wrap((rad / TAU) * 360, 0, 360);
 }
+
+export function closestEven(value: number): number {
+  return Math.round(value / 2) * 2;
+}
