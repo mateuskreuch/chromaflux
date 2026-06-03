@@ -1,4 +1,4 @@
-import { hsv2rgb, rgbString, type HSV } from "@/lib/color";
+import { hsv2css, type HSV } from "@/lib/color";
 import { deg2rad, rad2deg, clamp, closestEven } from "@/lib/utils";
 import { Canvas, type Point } from "@/lib/canvas";
 
@@ -65,7 +65,7 @@ export class ColorPicker extends Canvas {
       svSize + 2 * this.svOutline,
     );
 
-    this.ctx.fillStyle = rgbString(hsv2rgb({ h: color.h, s: 100, v: 100 }));
+    this.ctx.fillStyle = hsv2css({ h: color.h, s: 100, v: 100 });
     this.ctx.fillRect(svStart, svStart, svSize, svSize);
 
     const saturationGradient = this.ctx.createLinearGradient(svStart, 0, svEnd, 0);

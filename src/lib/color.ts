@@ -10,14 +10,10 @@ export type RGB = { r: number; g: number; b: number };
 export type RGBA = RGB & A;
 export type Oklab = { l: number; a: number; b: number };
 
-export function rgbString(rgb: RGB): string {
-  return `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`;
-}
-
-export function hsv2rgb(hsv: HSV): RGB {
+export function hsv2css(hsv: HSV): string {
   const [r, g, b] = convert.hsv.rgb(hsv.h, hsv.s, hsv.v);
 
-  return { r, g, b };
+  return `rgb(${r}, ${g}, ${b})`;
 }
 
 export function rgb2hsv(r: number, g: number, b: number): HSV {
@@ -48,11 +44,11 @@ export function interpolator(space: "oklab" | "lab", a: HSV, b: HSV) {
   const _a: number[] = convert.hsv[space](a.h, a.s, a.v);
   const _b: number[] = convert.hsv[space](b.h, b.s, b.v);
 
-  return (t: number): RGB => {
+  return (t: number): HSV => {
     const x = _a.map((_, i) => lerp(_a[i], _b[i], t));
-    const [r, g, b] = convert[space].rgb(x);
+    const [h, s, v] = convert[space].hsv(x);
 
-    return { r, g, b };
+    return { h, s, v };
   };
 }
 

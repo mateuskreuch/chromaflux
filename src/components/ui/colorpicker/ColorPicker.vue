@@ -7,7 +7,7 @@ import {
 import { setColor, useColor } from "@/composables/useColor";
 import { wrap } from "@/lib/utils";
 import { ColorPicker } from "./colorPicker";
-import { hsv2rgb, rgbString } from "@/lib/color";
+import { hsv2css } from "@/lib/color";
 
 const { color } = useColor();
 
@@ -116,7 +116,7 @@ watch(color, () => colorPicker?.draw(color.value), { deep: true });
         <NumberFieldInput class="w-12" />
       </NumberField>
       <div class="ml-3 flex-1 h-9 rounded-md" :style="{
-        backgroundColor: rgbString(hsv2rgb(color)),
+        backgroundColor: hsv2css(color),
       }" />
     </div>
   </div>

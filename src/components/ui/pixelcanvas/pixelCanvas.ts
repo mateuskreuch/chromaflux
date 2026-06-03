@@ -1,4 +1,4 @@
-import { hashRgb, hsv2rgb, imageData2rgba, interpolator, rgbString, type HSV, type RGB } from "@/lib/color";
+import { hashRgb, hsv2css, imageData2rgba, interpolator, type HSV, type RGB } from "@/lib/color";
 import { Canvas, type Point } from "@/lib/canvas";
 
 export class PixelCanvas extends Canvas {
@@ -9,7 +9,7 @@ export class PixelCanvas extends Canvas {
   }
 
   drawPixel(pos: Point, color: HSV): void {
-    this.ctx.fillStyle = rgbString(hsv2rgb(color));
+    this.ctx.fillStyle = hsv2css(color);
     this.ctx.fillRect(pos.x, pos.y, 1, 1);
     this.propagate(pos, { x: 1, y: 0 }, 0, color);
     this.propagate(pos, { x: -1, y: 0 }, 0, color);
@@ -59,7 +59,7 @@ export class PixelCanvas extends Canvas {
       for (let i = 1; i < walked; i++) {
         x -= delta.x;
         y -= delta.y;
-        this.ctx.fillStyle = rgbString(interpolate(i / walked));
+        this.ctx.fillStyle = hsv2css(interpolate(i / walked));
         this.ctx.fillRect(x, y, 1, 1);
       }
     } else {
