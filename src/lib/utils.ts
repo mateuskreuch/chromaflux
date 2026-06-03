@@ -33,3 +33,23 @@ export function rad2deg(rad: number) {
 export function closestEven(value: number): number {
   return Math.round(value / 2) * 2;
 }
+
+export function minAndMax(arr: number[]): { min: number; max: number } {
+  return arr.reduce(
+    (acc, val) => ({
+      min: Math.min(acc.min, val),
+      max: Math.max(acc.max, val),
+    }),
+    { min: Infinity, max: -Infinity },
+  );
+}
+
+export function newImage(src: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+
+    img.onload = () => resolve(img);
+    img.onerror = (err) => reject(err);
+    img.src = src;
+  });
+};

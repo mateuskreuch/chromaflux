@@ -1,4 +1,4 @@
-import { hsv2rgb, interpolator, rgbString, type HSV } from "@/lib/color";
+import { hashRgb, hsv2rgb, imageData2rgba, interpolator, rgbString, type HSV, type RGB } from "@/lib/color";
 import { Canvas, type Point } from "@/lib/canvas";
 
 export class PixelCanvas extends Canvas {
@@ -25,6 +25,23 @@ export class PixelCanvas extends Canvas {
     const { a, ...hsv } = this.getHSVA(pos);
 
     return a > 0 ? hsv : null;
+  }
+
+  getUniqueColors(): RGB[] {
+    const imageData = this.ctx.getImageData(0, 0, this.width, this.height);
+    const colors = new Map<number, RGB>();
+
+    for (const { a, ...rgb } of imageData2rgba(imageData)) {
+      if (a === 0) continue;
+
+      const key = hashRgb(rgb);
+
+      if (!colors.has(key)) {
+        colors.set(key, rgb);
+      }
+    }
+
+    return Array.from(colors.values());
   }
 
   private propagate({ x, y }: Point, delta: Point, walked: number, color: HSV): void {

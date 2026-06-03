@@ -1,5 +1,5 @@
 import { rgb2hsv, type HSVA } from "@/lib/color";
-import { clamp } from "@/lib/utils";
+import { clamp, newImage } from "@/lib/utils";
 
 export type Point = { x: number; y: number };
 
@@ -37,17 +37,11 @@ export class Canvas {
     return this.canvas.toDataURL(type);
   }
 
-  loadImage(src: string): Promise<void> {
-    return new Promise((resolve) => {
-      const img = new Image();
+  async loadImage(src: string): Promise<void> {
+    const img = await newImage(src);
 
-      img.onload = () => {
-        this.clear();
-        this.ctx.drawImage(img, 0, 0, this.canvas.width, this.canvas.height);
-        resolve();
-      };
-      img.src = src;
-    });
+    this.clear();
+    this.ctx.drawImage(img, 0, 0, this.canvas.width, this.canvas.height);
   }
 
   getMousePos(e: MouseEvent): Point {

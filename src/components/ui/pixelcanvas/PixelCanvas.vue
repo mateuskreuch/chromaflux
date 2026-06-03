@@ -4,16 +4,27 @@ import { Eraser, Download, Upload } from "@lucide/vue";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { setColor, useColor } from "@/composables/useColor";
+import type { RGB } from "@/lib/color";
 import { PixelCanvas } from "./pixelCanvas";
 
 const GRID_SIZE = 32;
 
 const { color } = useColor();
 
+const emit = defineEmits<{
+  (e: "palette-change", palette: RGB[]): void;
+}>();
+
 const drawMode = ref<null | "pencil" | "eraser">(null);
 const canvasRef = ref<HTMLCanvasElement>();
 
 let pixelCanvas: PixelCanvas | null = null;
+
+function refreshPalette() {
+  if (pixelCanvas) {
+    emit("palette-change", pixelCanvas.getUniqueColors());
+  }
+}
 
 function onMouseDown(e: MouseEvent) {
   e.preventDefault();
@@ -46,12 +57,17 @@ function onMouseMove(e: MouseEvent) {
 }
 
 function onWindowMouseUp() {
+  if (drawMode.value) {
+    refreshPalette();
+  }
+
   drawMode.value = null;
 }
 
 function clearCanvas() {
   if (confirm("Are you sure you want to clear the canvas?")) {
     pixelCanvas?.clear();
+    refreshPalette();
   }
 }
 
@@ -78,7 +94,9 @@ function loadCanvas(e: Event) {
   const reader = new FileReader();
 
   reader.onload = (event) => {
-    pixelCanvas?.loadImage(event.target?.result as string);
+    pixelCanvas?.loadImage(event.target?.result as string).then(() => {
+      refreshPalette();
+    });
   };
   reader.readAsDataURL(file);
 }
@@ -91,9 +109,9 @@ onUnmounted(() => window.removeEventListener("mouseup", onWindowMouseUp));
 </script>
 
 <template>
-  <div class="flex flex-col gap-4 justify-between w-full">
+  <div class="flex flex-col gap-6 justify-between w-full h-full">
     <div
-      class="checkerboard cursor-crosshair select-none ring-1 ring-border aspect-square w-full"
+      class="checkerboard cursor-crosshair select-none aspect-square w-full"
       @contextmenu.prevent
     >
       <canvas
@@ -121,7 +139,7 @@ onUnmounted(() => window.removeEventListener("mouseup", onWindowMouseUp));
         <Label class="flex items-center justify-center">
           <Upload class="w-4 h-4 mr-2" />
           Load
-          <input type="file" accept="image/png" class="hidden" @change="loadCanvas" />
+          <input type="file" accept="image/png" class="hidden" @click="($event.target as HTMLInputElement).value = ''"  @change="loadCanvas" />
         </Label>
       </Button>
     </div>
@@ -130,13 +148,13 @@ onUnmounted(() => window.removeEventListener("mouseup", onWindowMouseUp));
 
 <style scoped>
 .checkerboard {
-  background-color: #bbb;
+  background-color: #777;
   background-image:
-    linear-gradient(45deg, #999 25%, transparent 25%),
-    linear-gradient(-45deg, #999 25%, transparent 25%),
-    linear-gradient(45deg, transparent 75%, #999 75%),
-    linear-gradient(-45deg, transparent 75%, #999 75%);
-  background-size: 8px 8px;
-  background-position: 0 0, 0 4px, 4px -4px, -4px 0px;
+    linear-gradient(45deg, #666 25%, transparent 25%),
+    linear-gradient(-45deg, #666 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #666 75%),
+    linear-gradient(-45deg, transparent 75%, #666 75%);
+  background-size: 3.125% 3.125%;
+  background-position: 0 0, 0 1.5625%, 1.5625% -1.5625%, -1.5625% 0px;
 }
 </style>
