@@ -30,12 +30,12 @@ function updateCanvasSize() {
   colorPicker?.draw(color.value);
 }
 
-function onMouseDown(e: MouseEvent) {
+function onPointerDown(e: MouseEvent | TouchEvent) {
   if (!colorPicker) return;
 
   e.preventDefault();
 
-  const pos = colorPicker.getMousePos(e);
+  const pos = colorPicker.getPointerPos(e);
 
   if (colorPicker.isOnRing(pos)) {
     dragMode.value = "hue";
@@ -46,19 +46,19 @@ function onMouseDown(e: MouseEvent) {
   }
 }
 
-function onWindowMouseMove(e: MouseEvent) {
+function onWindowPointerMove(e: MouseEvent | TouchEvent) {
   if (!dragMode.value || !colorPicker) return;
 
   e.preventDefault();
 
   if (dragMode.value === "hue") {
-    setColor(colorPicker.hueFromPos(colorPicker.getMousePos(e)));
+    setColor(colorPicker.hueFromPos(colorPicker.getPointerPos(e)));
   } else {
-    setColor(colorPicker.svFromPos(colorPicker.getMousePos(e)));
+    setColor(colorPicker.svFromPos(colorPicker.getPointerPos(e)));
   }
 }
 
-function onWindowMouseUp() {
+function onWindowPointerUp() {
   dragMode.value = null;
 }
 
@@ -71,14 +71,18 @@ onMounted(() => {
     resizeObserver.observe(canvasRef.value);
   }
 
-  window.addEventListener("mousemove", onWindowMouseMove);
-  window.addEventListener("mouseup", onWindowMouseUp);
+  window.addEventListener("mousemove", onWindowPointerMove);
+  window.addEventListener("mouseup", onWindowPointerUp);
+  window.addEventListener("touchmove", onWindowPointerMove);
+  window.addEventListener("touchend", onWindowPointerUp);
 });
 
 onUnmounted(() => {
   resizeObserver?.disconnect();
-  window.removeEventListener("mousemove", onWindowMouseMove);
-  window.removeEventListener("mouseup", onWindowMouseUp);
+  window.removeEventListener("mousemove", onWindowPointerMove);
+  window.removeEventListener("mouseup", onWindowPointerUp);
+  window.removeEventListener("touchmove", onWindowPointerMove);
+  window.removeEventListener("touchend", onWindowPointerUp);
 });
 
 watch(color, () => colorPicker?.draw(color.value), { deep: true });
@@ -89,8 +93,9 @@ watch(color, () => colorPicker?.draw(color.value), { deep: true });
     <div class="aspect-square w-full">
       <canvas
         ref="canvasRef"
-        class="w-full h-full cursor-crosshair select-none"
-        @mousedown="onMouseDown"
+        class="w-full h-full cursor-crosshair select-none touch-none"
+        @mousedown="onPointerDown"
+        @touchstart.passive="onPointerDown"
       />
     </div>
     <div class="flex items-center gap-2">

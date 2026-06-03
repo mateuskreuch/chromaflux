@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from "vue";
-import { Eraser, Download, Upload } from "@lucide/vue";
+import { Eraser, Download, Upload, Pencil, File } from "@lucide/vue";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { setColor, useColor } from "@/composables/useColor";
@@ -31,37 +31,51 @@ function onMouseDown(e: MouseEvent) {
 
   if (e.button === 0) {
     drawMode.value = "pencil";
-    pixelCanvas?.drawPixel(pixelCanvas.getMousePos(e), color.value);
+    pixelCanvas?.drawPixel(pixelCanvas.getPointerPos(e), color.value);
   } else if (e.button === 1) {
     drawMode.value = null;
 
-    const picked = pixelCanvas?.pickColor(pixelCanvas.getMousePos(e));
+    const picked = pixelCanvas?.pickColor(pixelCanvas.getPointerPos(e));
 
     if (picked) {
       setColor(picked);
     }
   } else if (e.button === 2) {
     drawMode.value = "eraser";
-    pixelCanvas?.erasePixel(pixelCanvas.getMousePos(e));
+    pixelCanvas?.erasePixel(pixelCanvas.getPointerPos(e));
   } else {
     drawMode.value = null;
   }
 }
 
-function onMouseMove(e: MouseEvent) {
-  e.preventDefault();
+function onTouchStart(e: TouchEvent) {
+  if (!drawMode.value) {
+    drawMode.value = "pencil";
+  }
 
-  if (drawMode.value === "eraser") {
-    pixelCanvas?.erasePixel(pixelCanvas.getMousePos(e));
+  if (drawMode.value === "pencil") {
+    pixelCanvas?.drawPixel(pixelCanvas.getPointerPos(e), color.value);
+  } else if (drawMode.value === "eraser") {
+    pixelCanvas?.erasePixel(pixelCanvas.getPointerPos(e));
   }
 }
 
-function onWindowMouseUp() {
+function onPointerMove(e: MouseEvent | TouchEvent) {
+  e.preventDefault();
+
+  if (drawMode.value === "eraser") {
+    pixelCanvas?.erasePixel(pixelCanvas.getPointerPos(e));
+  }
+}
+
+function onWindowPointerUp(e: MouseEvent | TouchEvent) {
   if (drawMode.value) {
     refreshPalette();
   }
 
-  drawMode.value = null;
+  if (e.target === canvasRef.value) {
+    drawMode.value = null;
+  }
 }
 
 function clearCanvas() {
@@ -101,11 +115,19 @@ function loadCanvas(e: Event) {
   reader.readAsDataURL(file);
 }
 
+function toggleDrawMode(mode: "pencil" | "eraser") {
+  drawMode.value = drawMode.value === mode ? null : mode;
+}
+
 onMounted(() => {
   pixelCanvas = PixelCanvas.build(canvasRef.value);
-  window.addEventListener("mouseup", onWindowMouseUp);
+  window.addEventListener("mouseup", onWindowPointerUp);
+  window.addEventListener("touchend", onWindowPointerUp);
 });
-onUnmounted(() => window.removeEventListener("mouseup", onWindowMouseUp));
+onUnmounted(() => {
+  window.removeEventListener("mouseup", onWindowPointerUp);
+  window.removeEventListener("touchend", onWindowPointerUp);
+});
 </script>
 
 <template>
@@ -118,16 +140,26 @@ onUnmounted(() => window.removeEventListener("mouseup", onWindowMouseUp));
         ref="canvasRef"
         :width="GRID_SIZE"
         :height="GRID_SIZE"
-        class="w-full h-full [image-rendering:pixelated]"
+        class="w-full h-full [image-rendering:pixelated] touch-none"
         @mousedown="onMouseDown"
-        @mousemove="onMouseMove"
+        @mousemove="onPointerMove"
+        @touchstart.passive="onTouchStart"
+        @touchmove.passive="onPointerMove"
       />
     </div>
 
-    <div class="flex items-center gap-2">
+    <div class="flex flex-wrap items-center gap-2">
+      <Button :variant="drawMode === 'pencil' ? 'default' : 'secondary'" title="Pencil" @click="toggleDrawMode('pencil')">
+        <Pencil class="w-4 h-4" />
+      </Button>
+
+      <Button :variant="drawMode === 'eraser' ? 'default' : 'secondary'" title="Eraser" @click="toggleDrawMode('eraser')">
+        <Eraser class="w-4 h-4" />
+      </Button>
+
       <Button variant="secondary" class="flex-1" title="Clear Canvas" @click="clearCanvas">
-        <Eraser class="w-4 h-4 mr-2" />
-        Clear
+        <File class="w-4 h-4 mr-2" />
+        New
       </Button>
 
       <Button variant="secondary" class="flex-1" title="Save PNG" @click="saveCanvas">

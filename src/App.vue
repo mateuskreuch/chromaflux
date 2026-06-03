@@ -14,8 +14,8 @@ mode.value = "dark";
 </script>
 
 <template>
-  <div class="relative min-h-screen flex items-center justify-center">
-    <header class="absolute inset-x-0 top-0 flex flex-col items-center gap-6 p-6 pt-16">
+  <div class="min-h-screen flex flex-col items-center justify-center">
+    <header class="w-full flex flex-col items-center gap-6 p-6">
       <img
         src="./assets/logo.png"
         alt="Pixel Art Creator Logo"
@@ -25,7 +25,7 @@ mode.value = "dark";
         A pixel art palette creator.
       </h2>
     </header>
-    <main class="flex flex-row gap-6 items-stretch w-full max-w-[1600px] p-6">
+    <main class="w-full flex flex-col gap-6 items-stretch max-w-lg p-6 pt-0 lg:max-w-[1600px] lg:flex-row">
       <Card class="flex-1">
         <CardContent class="h-full">
           <ColorPicker />

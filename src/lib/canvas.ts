@@ -44,12 +44,15 @@ export class Canvas {
     this.ctx.drawImage(img, 0, 0, this.canvas.width, this.canvas.height);
   }
 
-  getMousePos(e: MouseEvent): Point {
+  getPointerPos(e: MouseEvent | TouchEvent): Point {
     const { width, height } = this.canvas;
     const rect = this.canvas.getBoundingClientRect();
 
-    const x = Math.floor(((e.clientX - rect.left) * width) / rect.width);
-    const y = Math.floor(((e.clientY - rect.top) * height) / rect.height);
+    const clientX = "touches" in e ? (e.touches[0] || e.changedTouches[0]).clientX : e.clientX;
+    const clientY = "touches" in e ? (e.touches[0] || e.changedTouches[0]).clientY : e.clientY;
+
+    const x = Math.floor(((clientX - rect.left) * width) / rect.width);
+    const y = Math.floor(((clientY - rect.top) * height) / rect.height);
 
     return {
       x: clamp(x, 0, width - 1),
