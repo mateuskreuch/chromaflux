@@ -1,9 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, watch } from "vue";
-import {
-  NumberField,
-  NumberFieldInput,
-} from '@/components/ui/number-field'
+import { NumberField, NumberFieldInput } from "@/components/ui/number-field";
 import { setColor, useColor } from "@/composables/useColor";
 import { wrap } from "@/lib/utils";
 import { ColorPicker } from "./colorPicker";

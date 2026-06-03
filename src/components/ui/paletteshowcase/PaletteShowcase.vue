@@ -16,7 +16,11 @@ onMounted(async () => {
   paletteCanvas.value?.recolor(props.palette);
 });
 
-watch(() => props.palette, () => paletteCanvas.value?.recolor(props.palette), { deep: true });
+watch(
+  () => props.palette,
+  () => paletteCanvas.value?.recolor(props.palette),
+  { deep: true },
+);
 </script>
 
 <template>

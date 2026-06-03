@@ -1,4 +1,11 @@
-import { type RGB, rgb2oklab, closestColor, imageData2rgba, hashRgb, type Oklab } from "@/lib/color";
+import {
+  type RGB,
+  rgb2oklab,
+  closestColor,
+  imageData2rgba,
+  hashRgb,
+  type Oklab,
+} from "@/lib/color";
 import { Canvas } from "@/lib/canvas";
 import { minAndMax, newImage } from "@/lib/utils";
 
@@ -23,7 +30,12 @@ export class PaletteShowcase extends Canvas {
     this.ctx.drawImage(img, 0, 0);
 
     const imageData = this.ctx.getImageData(0, 0, this.width, this.height);
-    const lightness = minAndMax(imageData2rgba(imageData).filter((rgba) => rgba.a > 0).map(rgb2oklab).map((lab) => lab.l));
+    const lightness = minAndMax(
+      imageData2rgba(imageData)
+        .filter((rgba) => rgba.a > 0)
+        .map(rgb2oklab)
+        .map((lab) => lab.l),
+    );
 
     this.originalImageData = imageData;
     this.originalMinL = lightness.min;
@@ -40,7 +52,7 @@ export class PaletteShowcase extends Canvas {
 
     const closestCache = new Map<number, RGB>();
     const paletteOklab = palette.map(rgb2oklab);
-    const {min: paletteMinL, max: paletteMaxL} = minAndMax(paletteOklab.map((lab) => lab.l));
+    const { min: paletteMinL, max: paletteMaxL } = minAndMax(paletteOklab.map((lab) => lab.l));
     const recoloredData = [];
 
     for (const { a, ...rgb } of imageData2rgba(this.originalImageData)) {

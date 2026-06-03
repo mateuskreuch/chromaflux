@@ -52,4 +52,4 @@ export function newImage(src: string): Promise<HTMLImageElement> {
     img.onerror = (err) => reject(err);
     img.src = src;
   });
-};
+}
