@@ -1,9 +1,13 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, watch } from "vue";
-import { Input } from "@/components/ui/input";
+import {
+  NumberField,
+  NumberFieldInput,
+} from '@/components/ui/number-field'
 import { setColor, useColor } from "@/composables/useColor";
 import { wrap } from "@/lib/utils";
 import { ColorPicker } from "./colorPicker";
+import { hsv2rgb, rgbString } from "@/lib/color";
 
 const { color } = useColor();
 
@@ -81,7 +85,7 @@ watch(color, () => colorPicker?.draw(color.value), { deep: true });
 </script>
 
 <template>
-  <div class="flex flex-col gap-4 justify-between items-center w-full">
+  <div class="flex flex-col gap-6 justify-between w-full h-full">
     <div class="aspect-square w-full">
       <canvas
         ref="canvasRef"
@@ -89,28 +93,31 @@ watch(color, () => colorPicker?.draw(color.value), { deep: true });
         @mousedown="onMouseDown"
       />
     </div>
-    <div class="flex items-center gap-1.5">
-      <span class="text-xs text-muted-foreground w-4 text-right">H</span>
-      <Input
+    <div class="flex items-center gap-2">
+      <span class="text-xs text-muted-foreground text-right">H</span>
+      <NumberField
         :model-value="color.h"
-        type="number"
-        class="w-16 font-mono"
         @update:model-value="(val) => color.h = wrap(+val, 0, 360)"
-      />
-      <span class="text-xs text-muted-foreground w-4 text-right">S</span>
-      <Input
+      >
+        <NumberFieldInput class="w-12" />
+      </NumberField>
+      <span class="text-xs text-muted-foreground text-right">S</span>
+      <NumberField
         :model-value="color.s"
-        type="number"
-        class="w-16 font-mono"
         @update:model-value="(val) => color.s = wrap(+val, 0, 100)"
-      />
-      <span class="text-xs text-muted-foreground w-4 text-right">V</span>
-      <Input
+      >
+        <NumberFieldInput class="w-12" />
+      </NumberField>
+      <span class="text-xs text-muted-foreground text-right">V</span>
+      <NumberField
         :model-value="color.v"
-        type="number"
-        class="w-16 font-mono"
         @update:model-value="(val) => color.v = wrap(+val, 0, 100)"
-      />
+      >
+        <NumberFieldInput class="w-12" />
+      </NumberField>
+      <div class="ml-3 flex-1 h-9 rounded-md" :style="{
+        backgroundColor: rgbString(hsv2rgb(color)),
+      }" />
     </div>
   </div>
 </template>

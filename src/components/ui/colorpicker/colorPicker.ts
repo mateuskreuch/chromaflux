@@ -25,12 +25,12 @@ export class ColorPicker extends Canvas {
     this.cursorRadius = Math.ceil(0.022 * size);
     this.center = size / 2;
     this.ringOuterRadius = size / 2;
-    this.ringInnerRadius = this.ringOuterRadius - 2*this.cursorRadius;
+    this.ringInnerRadius = this.ringOuterRadius - 2 * this.cursorRadius;
     this.ringCenterRadius = Math.floor((this.ringOuterRadius + this.ringInnerRadius) / 2);
-    this.svSize = closestEven((this.ringInnerRadius - 1.8*this.cursorRadius) * Math.SQRT2);
+    this.svSize = closestEven((this.ringInnerRadius - 1.8 * this.cursorRadius) * Math.SQRT2);
     this.svStart = this.center - this.svSize / 2;
     this.svEnd = this.svStart + this.svSize;
-    this.svOutline = Math.ceil(0.005 * size);
+    this.svOutline = Math.ceil(0.0025 * size);
   }
 
   draw(color: HSV): void {
@@ -57,8 +57,13 @@ export class ColorPicker extends Canvas {
       y: center + this.ringCenterRadius * Math.sin(hueAngle),
     });
 
-    this.ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
-    this.ctx.fillRect(svStart - this.svOutline, svStart - this.svOutline, svSize + 2 * this.svOutline, svSize + 2 * this.svOutline);
+    this.ctx.fillStyle = "rgba(255, 255, 255, 0.1)";
+    this.ctx.fillRect(
+      svStart - this.svOutline,
+      svStart - this.svOutline,
+      svSize + 2 * this.svOutline,
+      svSize + 2 * this.svOutline,
+    );
 
     this.ctx.fillStyle = rgbString(hsv2rgb({ h: color.h, s: 100, v: 100 }));
     this.ctx.fillRect(svStart, svStart, svSize, svSize);
