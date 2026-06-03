@@ -23,6 +23,7 @@ export function rgb2hsv(r: number, g: number, b: number): HSV {
 }
 
 export function rgb2oklab(rgb: RGB): Oklab {
+  // @ts-ignore
   const [l, a, b] = convert.rgb.oklab(rgb.r, rgb.g, rgb.b);
 
   return { l, a, b };
@@ -41,11 +42,14 @@ export function oklabDistance(c1: Oklab, c2: Oklab): number {
 }
 
 export function interpolator(space: "oklab" | "lab", a: HSV, b: HSV) {
+  // @ts-ignore
   const _a: number[] = convert.hsv[space](a.h, a.s, a.v);
+  // @ts-ignore
   const _b: number[] = convert.hsv[space](b.h, b.s, b.v);
 
   return (t: number): HSV => {
     const x = _a.map((_, i) => lerp(_a[i], _b[i], t));
+    // @ts-ignore
     const [h, s, v] = convert[space].hsv(x);
 
     return { h, s, v };
@@ -65,6 +69,7 @@ export function closestColor(target: Oklab, colors: Oklab[]): RGB {
     }
   }
 
+  // @ts-ignore
   const [r, g, b] = convert.oklab.rgb(closest.l, closest.a, closest.b);
 
   return { r, g, b };
